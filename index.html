@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conteo de Productos</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <h1>Conteo de Productos</h1>
+    <section class="search-section">
+      <label for="searchInput">Buscar producto por nombre:</label>
+      <input id="searchInput" type="search" placeholder="Ingrese nombre del producto..." />
+    </section>
+
+    <section class="product-list-section">
+      <h2>Productos</h2>
+      <div id="productList" class="product-list">Cargando productos...</div>
+    </section>
+
+    <section class="detail-section">
+      <h2>Datos del producto</h2>
+      <div id="detailCard" class="detail-card hidden">
+        <p><strong>Producto seleccionado:</strong> <span id="selectedProductName"></span></p>
+        <form id="productForm">
+          <label for="cantidadBultos">Cantidad de bultos</label>
+          <input id="cantidadBultos" name="cantidadBultos" type="number" min="0" value="0" required />
+
+          <label for="unidadesSueltas">Unidades sueltas</label>
+          <input id="unidadesSueltas" name="unidadesSueltas" type="number" min="0" value="0" required />
+
+          <label for="fechaVencimiento">Fecha de vencimiento</label>
+          <input id="fechaVencimiento" name="fechaVencimiento" type="date" required />
+
+          <button id="addEntryButton" type="button">Agregar producto</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="session-section">
+      <h2>Registro de sesión</h2>
+      <div id="sessionEntries" class="session-entries">No hay datos guardados aún.</div>
+      <button id="newCountButton" type="button" class="warning-button">Nuevo Conteo</button>
+      <button id="exportButton" type="button" disabled>Guardar y exportar CSV</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

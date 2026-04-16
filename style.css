@@ -1,0 +1,151 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7fb;
+  color: #222;
+}
+
+main {
+  max-width: 900px;
+  margin: 16px auto;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.08);
+}
+
+h1,
+h2 {
+  margin-top: 0;
+}
+
+.search-section,
+.product-list-section,
+.detail-section,
+.session-section {
+  margin-bottom: 24px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+input[type="search"],
+input[type="number"],
+input[type="date"] {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #ccd4e0;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+
+.product-list {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.product-card {
+  border: 1px solid #d3dde7;
+  background: #f9fbff;
+  padding: 16px;
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  min-height: 60px;
+}
+
+.product-card:hover {
+  background: #eef4ff;
+  transform: translateY(-1px);
+}
+
+.detail-card {
+  background: #fefefe;
+  border: 1px solid #dfe7ef;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.hidden {
+  display: none;
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 18px;
+  background: #2563eb;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.warning-button {
+  background: #f97316;
+  margin-bottom: 12px;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.warning-button:hover:not(:disabled) {
+  background: #ea580c;
+}
+
+.session-entries ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+.session-entries li {
+  background: #f1f5f9;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.empty {
+  color: #555;
+}
+
+@media (max-width: 640px) {
+  main {
+    margin: 8px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .product-list {
+    grid-template-columns: 1fr;
+  }
+
+  button {
+    font-size: 1.05rem;
+  }
+
+  .warning-button {
+    margin-right: 0;
+  }
+}
