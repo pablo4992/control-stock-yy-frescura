@@ -1,4 +1,4 @@
-// MAESTRO DE PRODUCTOS (PEPSICO ETIQUETADO)
+// MAESTRO DE PRODUCTOS (TODOS ETIQUETADOS COMO PEPSICO)
 const productos = [
     { "codigo": "300052023", "descripcion": "3D MEGA QUESO 23GX120", "unidades_x_bulto": 120, "proveedor": "PEPSICO" },
     { "codigo": "300058395", "descripcion": "3D QUESO 43GX75X1", "unidades_x_bulto": 75, "proveedor": "PEPSICO" },
@@ -103,6 +103,7 @@ const productos = [
 
 let conteosEfectuados = JSON.parse(localStorage.getItem('misConteos')) || [];
 
+// ELEMENTOS DOM
 const supplierSelect = document.getElementById('supplierSelect');
 const searchInput = document.getElementById('searchInput');
 const productList = document.getElementById('productList');
@@ -136,11 +137,7 @@ searchInput.addEventListener('input', (e) => {
         div.style.padding = "15px";
         div.style.borderBottom = "1px solid #eee";
         div.style.cursor = "pointer";
-        div.innerHTML = `
-            <span style="color:#007bff; font-weight:bold;">${p.codigo}</span><br>
-            <span>${p.descripcion}</span> 
-            <span style="color:#28a745; font-weight:bold;">[UxB: ${p.unidades_x_bulto}]</span>`;
-        
+        div.innerHTML = `<span style="color:#007bff; font-weight:bold;">${p.codigo}</span><br><span>${p.descripcion}</span> <span style="color:#28a745; font-weight:bold;">[UxB: ${p.unidades_x_bulto}]</span>`;
         div.onclick = () => {
             selectedProductName.textContent = p.descripcion;
             selectedProductName.dataset.codigo = p.codigo;
@@ -210,7 +207,6 @@ function actualizarVista() {
         return;
     }
     
-    // BLOQUEO DE PROVEEDOR SI HAY DATOS
     exportButton.disabled = false;
     supplierSelect.disabled = true;
     supplierSelect.style.opacity = "0.6";
@@ -224,6 +220,25 @@ function actualizarVista() {
     sessionEntries.innerHTML = tabla;
 }
 
-// 5. EXPORTAR CSV (CORREGIDO ERROR A1)
+// 5. EXPORTAR CSV
 exportButton.onclick = () => {
-    
+    let csv = "Codigo;Producto;UxB;Bultos;Unidades;Total;Proveedor;Vencimiento;Hora\r\n";
+    conteosEfectuados.forEach(i => {
+        csv += `${i.codigo};${i.nombre};${i.uxb};${i.bultos};${i.unidades};${i.total};${i.proveedor};${i.fecha};${i.hora}\r\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-16;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `conteo_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
+    link.click();
+};
+
+document.getElementById('newCountButton').onclick = () => {
+    if(confirm("¿Limpiar todo?")) {
+        localStorage.removeItem('misConteos');
+        conteosEfectuados = [];
+        actualizarVista();
+    }
+};
+
+actualizarVista();
