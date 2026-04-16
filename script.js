@@ -1,4 +1,4 @@
-// MAESTRO DE ARTÍCULOS CON UXB VISIBLE
+// MAESTRO DE ARTÍCULOS ACTIVOS
 const productos = [
     { "codigo": "300052023", "descripcion": "3D MEGA QUESO 23GX120", "unidades_x_bulto": 120 },
     { "codigo": "300058395", "descripcion": "3D QUESO 43GX75X1", "unidades_x_bulto": 75 },
@@ -104,6 +104,24 @@ const productos = [
 let registrosSesion = [];
 let productoSeleccionado = null;
 
+// Lógica del Cronómetro
+let timerInterval = null;
+let segundosTranscurridos = 0;
+
+function formatearTiempo(s) {
+    const min = Math.floor(s / 60).toString().padStart(2, '0');
+    const seg = (s % 60).toString().padStart(2, '0');
+    return `${min}:${seg}`;
+}
+
+function iniciarReloj() {
+    if (timerInterval) return;
+    timerInterval = setInterval(() => {
+        segundosTranscurridos++;
+        document.getElementById('cronometro').innerText = `Tiempo de conteo: ${formatearTiempo(segundosTranscurridos)}`;
+    }, 1000);
+}
+
 const searchInput = document.getElementById('searchInput');
 const productList = document.getElementById('productList');
 const detailCard = document.getElementById('detailCard');
@@ -111,11 +129,9 @@ const selectedProductName = document.getElementById('selectedProductName');
 const sessionEntries = document.getElementById('sessionEntries');
 const exportButton = document.getElementById('exportButton');
 
-// BUSCADOR: MUESTRA CÓDIGO Y UxB
 searchInput.addEventListener('input', () => {
     const term = searchInput.value.toLowerCase().trim();
     productList.innerHTML = '';
-    
     if (term.length < 2) return;
 
     const filtrados = productos.filter(p => 
@@ -128,7 +144,7 @@ searchInput.addEventListener('input', () => {
         filtrados.forEach(p => {
             const div = document.createElement('div');
             div.style = "padding: 12px; border-bottom: 1px solid #ddd; cursor: pointer; background: #fff;";
-            div.innerHTML = `<span style="color:#007bff; font-weight:bold;">[${p.codigo}]</span> <b>${p.descripcion}</b><br><small style="color:#d9534f; font-weight:bold;">UxB: ${p.unidades_x_bulto} unidades</small>`;
+            div.innerHTML = `<span style="color:#007bff; font-weight:bold;">[${p.codigo}]</span> <b>${p.descripcion}</b><br><small style="color:#d9534f; font-weight:bold;">UxB: ${p.unidades_x_bulto} un.</small>`;
             div.onclick = () => {
                 productoSeleccionado = p;
                 selectedProductName.innerText = `[${p.codigo}] ${p.descripcion} - (UxB: ${p.unidades_x_bulto})`;
@@ -141,13 +157,15 @@ searchInput.addEventListener('input', () => {
     }
 });
 
-// REGISTRAR PRODUCTO
 document.getElementById('addEntryButton').onclick = () => {
     const bultos = parseInt(document.getElementById('cantidadBultos').value) || 0;
     const unidades = parseInt(document.getElementById('unidadesSueltas').value) || 0;
     const fecha = document.getElementById('fechaVencimiento').value;
 
     if (!fecha) { alert("Poner fecha de vencimiento"); return; }
+
+    // Iniciar cronómetro en el primer registro
+    if (registrosSesion.length === 0) iniciarReloj();
 
     const total = (bultos * productoSeleccionado.unidades_x_bulto) + unidades;
 
@@ -166,7 +184,6 @@ document.getElementById('addEntryButton').onclick = () => {
     searchInput.focus();
 };
 
-// VISTA CON DETALLE DE UxB
 function actualizarVista() {
     if (registrosSesion.length === 0) {
         sessionEntries.innerHTML = 'Vacío';
@@ -191,12 +208,19 @@ window.borrarLinea = (i) => {
     actualizarVista();
 };
 
-// EXPORTACIÓN
 exportButton.onclick = () => {
-    let csv = "Codigo;Producto;UxB;Bultos;UnidadesSueltas;TotalUnidades;Vencimiento\n";
+    // Detener cronómetro al exportar
+    clearInterval(timerInterval);
+    timerInterval = null;
+    const tiempoFinal = formatearTiempo(segundosTranscurridos);
+
+    let csv = `Tiempo Total de Conteo: ${tiempoFinal}\n`;
+    csv += "Codigo;Producto;UxB;Bultos;UnidadesSueltas;TotalUnidades;Vencimiento\n";
+    
     registrosSesion.forEach(r => {
         csv += `${r.codigo};${r.descripcion};${r.uxb};${r.bultos};${r.unidades};${r.total};${r.vencimiento}\n`;
     });
+    
     const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -207,6 +231,10 @@ exportButton.onclick = () => {
 document.getElementById('newCountButton').onclick = () => {
     if (confirm("¿Borrar todo el conteo actual?")) {
         registrosSesion = [];
+        segundosTranscurridos = 0;
+        clearInterval(timerInterval);
+        timerInterval = null;
+        document.getElementById('cronometro').innerText = "Tiempo de conteo: 00:00";
         actualizarVista();
     }
 };
