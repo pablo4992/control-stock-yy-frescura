@@ -17,20 +17,29 @@
 
     <div id="cronometro" style="display:none;"></div>
 
+    <!-- SECCIÓN PROVEEDOR -->
+    <section class="supplier-section" style="margin-bottom: 15px;">
+      <label for="supplierSelect">Proveedor actual:</label>
+      <select id="supplierSelect" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #007bff; font-weight: bold;">
+        <option value="PEPSICO">PEPSICO</option>
+        <option value="ARCOR">ARCOR</option>
+        <option value="MONDELEZ">MONDELEZ</option>
+        <option value="OTROS">OTROS</option>
+      </select>
+    </section>
+
     <section class="search-section">
-      <label for="searchInput">Buscar producto (Nombre o Código):</label>
+      <label for="searchInput">Buscar producto:</label>
       <input id="searchInput" type="search" placeholder="Ingrese nombre o código..." autocomplete="off" />
     </section>
 
     <section class="product-list-section">
-      <h2>Productos encontrados</h2>
       <div id="productList" class="product-list">Escriba para buscar...</div>
     </section>
 
     <section class="detail-section">
-      <h2>Datos del producto</h2>
       <div id="detailCard" class="detail-card hidden">
-        <p><strong>Producto seleccionado:</strong> <span id="selectedProductName"></span></p>
+        <p><strong>Seleccionado:</strong> <span id="selectedProductName"></span></p>
         <form id="productForm">
           <label for="cantidadBultos">Cantidad de bultos</label>
           <input id="cantidadBultos" type="number" inputmode="numeric" min="0" value="0" required />
@@ -54,6 +63,6 @@
     </section>
   </main>
 
-  <script src="script.js?v=1.07"></script>
+  <script src="script.js?v=1.08"></script>
 </body>
 </html>
