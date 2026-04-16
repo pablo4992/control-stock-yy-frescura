@@ -3,29 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Expires" content="0"><meta http-equiv="Last-Modified" content="0">
-  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate"><meta http-equiv="Pragma" content="no-cache">
-  <title>Conteo de Productos Pro</title>
+  <meta http-equiv="Expires" content="0">
+  <meta http-equiv="Last-Modified" content="0">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  
+  <title>Conteo de Productos</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main>
     <h1>Conteo de Productos</h1>
-    <div id="cronometro" style="display:none;"></div>
 
-    <section class="supplier-section" style="margin-bottom: 15px;">
-      <label for="supplierSelect" style="display:block; margin-bottom:5px; font-weight:bold;">Proveedor actual:</label>
-      <select id="supplierSelect" style="width:100%; padding:12px; border-radius:8px; border:2px solid #007bff; font-weight:bold;">
-        <option value="PEPSICO">PEPSICO</option>
-        <option value="BIGAR SA">BIGAR SA</option>
-        <option value="DIELO SA">DIELO SA</option>
-        <option value="DON SATUR">DON SATUR</option>
-        <option value="GENOMMA">GENOMMA</option>
-        <option value="GEORGUALOS HNOS">GEORGUALOS HNOS</option>
-        <option value="GRUPO PEÑAFLOR SA">GRUPO PEÑAFLOR SA</option>
-        <option value="TIMBO SA">TIMBO SA</option>
-      </select>
-    </section>
+    <div id="cronometro" style="display:none;"></div>
 
     <section class="search-section">
       <label for="searchInput">Buscar producto (Nombre o Código):</label>
@@ -33,19 +23,24 @@
     </section>
 
     <section class="product-list-section">
-      <div id="productList" class="product-list" style="max-height:200px; overflow-y:auto; background:#fff; border-radius:8px;">Escriba para buscar...</div>
+      <h2>Productos encontrados</h2>
+      <div id="productList" class="product-list">Escriba para buscar...</div>
     </section>
 
     <section class="detail-section">
+      <h2>Datos del producto</h2>
       <div id="detailCard" class="detail-card hidden">
-        <p><strong>Seleccionado:</strong> <span id="selectedProductName"></span></p>
+        <p><strong>Producto seleccionado:</strong> <span id="selectedProductName"></span></p>
         <form id="productForm">
           <label for="cantidadBultos">Cantidad de bultos</label>
           <input id="cantidadBultos" type="number" inputmode="numeric" min="0" value="0" required />
+
           <label for="unidadesSueltas">Unidades sueltas</label>
           <input id="unidadesSueltas" type="number" inputmode="numeric" min="0" value="0" required />
+
           <label for="fechaVencimiento">Fecha de vencimiento</label>
           <input id="fechaVencimiento" type="date" required />
+
           <button id="addEntryButton" type="button">Agregar producto</button>
         </form>
       </div>
@@ -55,9 +50,10 @@
       <h2>Registro de sesión</h2>
       <div id="sessionEntries" class="session-entries">No hay datos.</div>
       <button id="newCountButton" type="button" class="warning-button">Nuevo Conteo</button>
-      <button id="exportButton" type="button" disabled>Guardar y exportar Archivo</button>
+      <button id="exportButton" type="button" disabled>Guardar y exportar CSV</button>
     </section>
   </main>
-  <script src="script.js?v=1.10"></script>
+
+  <script src="script.js?v=1.07"></script>
 </body>
 </html>
