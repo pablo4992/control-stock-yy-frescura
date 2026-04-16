@@ -87,7 +87,6 @@ const productos = [
 
 let conteosEfectuados = JSON.parse(localStorage.getItem('misConteos')) || [];
 
-// Elementos DOM
 const searchInput = document.getElementById('searchInput');
 const productList = document.getElementById('productList');
 const detailCard = document.getElementById('detailCard');
@@ -95,7 +94,6 @@ const selectedProductName = document.getElementById('selectedProductName');
 const sessionEntries = document.getElementById('sessionEntries');
 const exportButton = document.getElementById('exportButton');
 
-// Inputs Formulario
 const inputBultos = document.getElementById('cantidadBultos');
 const inputUnidades = document.getElementById('unidadesSueltas');
 const inputFecha = document.getElementById('fechaVencimiento');
@@ -107,22 +105,13 @@ searchInput.addEventListener('input', (e) => {
         productList.innerHTML = "Escriba para buscar...";
         return;
     }
-
-    const filtrados = productos.filter(p => 
-        p.descripcion.toLowerCase().includes(term) || p.codigo.includes(term)
-    );
-
+    const filtrados = productos.filter(p => p.descripcion.toLowerCase().includes(term) || p.codigo.includes(term));
     productList.innerHTML = "";
     filtrados.forEach(p => {
         const div = document.createElement('div');
-        div.style.padding = "15px"; // Más grande para el dedo
+        div.style.padding = "15px";
         div.style.borderBottom = "1px solid #eee";
-        div.innerHTML = `
-            <span style="color: #007bff; font-weight: bold;">${p.codigo}</span><br>
-            <span style="color: #333;">${p.descripcion}</span> 
-            <span style="color: #28a745; font-weight: bold; margin-left: 5px;">[UxB: ${p.unidades_x_bulto}]</span>
-        `;
-
+        div.innerHTML = `<span style="color:#007bff; font-weight:bold;">${p.codigo}</span><br><span style="color:#333;">${p.descripcion}</span> <span style="color:#28a745; font-weight:bold;">[UxB: ${p.unidades_x_bulto}]</span>`;
         div.onclick = () => {
             selectedProductName.textContent = p.descripcion;
             selectedProductName.dataset.codigo = p.codigo;
@@ -130,25 +119,20 @@ searchInput.addEventListener('input', (e) => {
             detailCard.classList.remove('hidden');
             productList.innerHTML = "";
             searchInput.value = "";
-            
-            // Salto automático y selección del texto
-            setTimeout(() => {
-                inputBultos.focus();
-                inputBultos.select(); 
-            }, 100);
+            setTimeout(() => { inputBultos.focus(); inputBultos.select(); }, 150);
         };
         productList.appendChild(div);
     });
 });
 
-// 2. ATAJOS DE TECLADO MÓVIL (Enter / Next)
-[inputBultos, inputUnidades, inputFecha].forEach((el, index, array) => {
+// 2. MODO RÁPIDO (SALTOS CON ENTER)
+[inputBultos, inputUnidades, inputFecha].forEach((el, idx, arr) => {
     el.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+        if(e.key === 'Enter'){
             e.preventDefault();
-            if (index < array.length - 1) {
-                array[index + 1].focus();
-                if(array[index+1].select) array[index+1].select();
+            if(idx < arr.length - 1){
+                arr[idx+1].focus();
+                if(arr[idx+1].select) arr[idx+1].select();
             } else {
                 guardarConteo();
             }
@@ -161,36 +145,29 @@ function guardarConteo() {
     const bultos = parseInt(inputBultos.value) || 0;
     const unidades = parseInt(inputUnidades.value) || 0;
     const uxb = parseInt(selectedProductName.dataset.uxb) || 0;
-    const fecha = inputFecha.value;
+    if (!inputFecha.value) return alert("Falta fecha");
 
-    if (!fecha) return alert("Falta la fecha");
-
-    const nuevoItem = {
+    conteosEfectuados.push({
         codigo: selectedProductName.dataset.codigo,
         nombre: selectedProductName.textContent,
         uxb: uxb,
         bultos: bultos,
         unidades: unidades,
         total: (bultos * uxb) + unidades,
-        fecha: fecha,
+        fecha: inputFecha.value,
         hora: new Date().toLocaleTimeString()
-    };
-
-    conteosEfectuados.push(nuevoItem);
+    });
     localStorage.setItem('misConteos', JSON.stringify(conteosEfectuados));
-    
     actualizarVista();
-    
-    // Reset y vuelta al buscador
     detailCard.classList.add('hidden');
     document.getElementById('productForm').reset();
-    window.scrollTo(0, 0); // Sube la pantalla para ver el buscador
+    window.scrollTo(0,0);
     searchInput.focus();
 }
 
 document.getElementById('addEntryButton').onclick = guardarConteo;
 
-// 4. VISTA
+// 4. TABLA EN PANTALLA
 function actualizarVista() {
     if (conteosEfectuados.length === 0) {
         sessionEntries.innerHTML = "Sin datos.";
@@ -199,36 +176,36 @@ function actualizarVista() {
     }
     exportButton.disabled = false;
     let tabla = `<div style="overflow-x:auto;"><table border="1" style="width:100%; border-collapse: collapse; font-size: 0.8em;">
-        <tr style="background: #eee;"><th>Cód.</th><th>Prod.</th><th>UxB</th><th>B</th><th>U</th><th>Total</th></tr>`;
-    conteosEfectuados.forEach(item => {
-        tabla += `<tr>
-            <td>${item.codigo}</td><td>${item.nombre}</td><td>${item.uxb}</td>
-            <td>${item.bultos}</td><td>${item.unidades}</td>
-            <td style="font-weight:bold; color:green;">${item.total}</td></tr>`;
+        <tr style="background:#eee;"><th>Cód.</th><th>Prod.</th><th>UxB</th><th>B</th><th>U</th><th>Total</th></tr>`;
+    conteosEfectuados.forEach(i => {
+        tabla += `<tr><td>${i.codigo}</td><td>${i.nombre}</td><td>${i.uxb}</td><td>${i.bultos}</td><td>${i.unidades}</td><td style="font-weight:bold;color:green;">${i.total}</td></tr>`;
     });
     tabla += `</table></div>`;
     sessionEntries.innerHTML = tabla;
 }
 
-// 5. EXPORTACIONES
+// 5. EXPORTAR CSV (CORREGIDO ERROR A1)
 exportButton.onclick = () => {
-    let csv = "\uFEFFCodigo;Producto;UxB;Bultos;Unidades;Total;Vencimiento\n";
-    conteosEfectuados.forEach(i => csv += `${i.codigo};${i.nombre};${i.uxb};${i.bultos};${i.unidades};${i.total};${i.fecha}\n`);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    // Usamos punto y coma para que Excel lo abra directamente en columnas
+    let csv = "Codigo;Producto;UxB;Bultos;Unidades;Total;Vencimiento;Hora\r\n";
+    conteosEfectuados.forEach(i => {
+        csv += `${i.codigo};${i.nombre};${i.uxb};${i.bultos};${i.unidades};${i.total};${i.fecha};${i.hora}\r\n`;
+    });
+
+    // La clave para corregir A1 en Excel es usar este MIME y no poner el BOM manual
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-16;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `conteo_${new Date().toLocaleDateString()}.csv`;
+    link.download = `conteo_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
     link.click();
 };
 
-// Listener para el botón de WhatsApp (buscando el ID dinámicamente)
-document.addEventListener('click', (e) => {
-    if(e.target.id === 'whatsappButton') {
-        let msg = "*CONTEO*\n";
-        conteosEfectuados.forEach(i => msg += `*${i.nombre}*: ${i.total} un.\n`);
-        window.open(`https://wa.me{encodeURIComponent(msg)}`, '_blank');
-    }
-});
+// 6. WHATSAPP
+document.getElementById('whatsappButton').onclick = () => {
+    let msg = "*RESUMEN CONTEO*\n----------------\n";
+    conteosEfectuados.forEach(i => msg += `*${i.nombre}*\nTotal: ${i.total} (B:${i.bultos} U:${i.unidades})\n----------------\n`);
+    window.open(`https://wa.me{encodeURIComponent(msg)}`, '_blank');
+};
 
 document.getElementById('newCountButton').onclick = () => {
     if(confirm("¿Limpiar todo?")) {
