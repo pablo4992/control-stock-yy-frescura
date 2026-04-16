@@ -1,4 +1,3 @@
-// MAESTRO DE ARTÍCULOS ACTIVOS
 const productos = [
     { "codigo": "300052023", "descripcion": "3D MEGA QUESO 23GX120", "unidades_x_bulto": 120 },
     { "codigo": "300058395", "descripcion": "3D QUESO 43GX75X1", "unidades_x_bulto": 75 },
@@ -98,7 +97,7 @@ const inputBultos = document.getElementById('cantidadBultos');
 const inputUnidades = document.getElementById('unidadesSueltas');
 const inputFecha = document.getElementById('fechaVencimiento');
 
-// 1. BUSCADOR TÁCTIL
+// 1. BUSCADOR
 searchInput.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase();
     if (term.length < 2) {
@@ -186,25 +185,15 @@ function actualizarVista() {
 
 // 5. EXPORTAR CSV (CORREGIDO ERROR A1)
 exportButton.onclick = () => {
-    // Usamos punto y coma para que Excel lo abra directamente en columnas
     let csv = "Codigo;Producto;UxB;Bultos;Unidades;Total;Vencimiento;Hora\r\n";
     conteosEfectuados.forEach(i => {
         csv += `${i.codigo};${i.nombre};${i.uxb};${i.bultos};${i.unidades};${i.total};${i.fecha};${i.hora}\r\n`;
     });
-
-    // La clave para corregir A1 en Excel es usar este MIME y no poner el BOM manual
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-16;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `conteo_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
     link.click();
-};
-
-// 6. WHATSAPP
-document.getElementById('whatsappButton').onclick = () => {
-    let msg = "*RESUMEN CONTEO*\n----------------\n";
-    conteosEfectuados.forEach(i => msg += `*${i.nombre}*\nTotal: ${i.total} (B:${i.bultos} U:${i.unidades})\n----------------\n`);
-    window.open(`https://wa.me{encodeURIComponent(msg)}`, '_blank');
 };
 
 document.getElementById('newCountButton').onclick = () => {
