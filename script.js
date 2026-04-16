@@ -1,4 +1,4 @@
-// MAESTRO DE ARTÍCULOS ACTIVOS (Lista Completa)
+// MAESTRO DE ARTÍCULOS ACTIVOS
 const productos = [
     { "codigo": "300052023", "descripcion": "3D MEGA QUESO 23GX120", "unidades_x_bulto": 120 },
     { "codigo": "300058395", "descripcion": "3D QUESO 43GX75X1", "unidades_x_bulto": 75 },
@@ -82,12 +82,11 @@ const productos = [
     { "codigo": "300063263", "descripcion": "TWISTOS MINIT QUESO 40GX112X1", "unidades_x_bulto": 112 },
     { "codigo": "300063097", "descripcion": "TWISTOS MINIT QUESO 95GX30X1", "unidades_x_bulto": 30 },
     { "codigo": "300052694", "descripcion": "TWISTOS MINIT QUESO 155GX20", "unidades_x_bulto": 20 },
-    { "codigo": "300063264", "descripcion": "TWISTOS MINIT", "unidades_x_bulto": 0 }
+    { "codigo": "300063264", "descripcion": "TWISTOS MINIT", "unidades_x_bulto": 1 } // Ajustado a 1 para evitar divisiones por cero
 ];
 
-// --- LÓGICA DE PERSISTENCIA Y FUNCIONAMIENTO ---
+// --- LÓGICA DEL SISTEMA ---
 
-// 1. CARGA DE DATOS GUARDADOS
 let conteosEfectuados = JSON.parse(localStorage.getItem('misConteos')) || [];
 
 const searchInput = document.getElementById('searchInput');
@@ -97,7 +96,7 @@ const selectedProductName = document.getElementById('selectedProductName');
 const sessionEntries = document.getElementById('sessionEntries');
 const exportButton = document.getElementById('exportButton');
 
-// 2. BÚSQUEDA CON COLORES Y UXB
+// 1. BUSCADOR CON COLORES Y UXB
 searchInput.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase();
     if (term.length < 2) {
@@ -115,20 +114,16 @@ searchInput.addEventListener('input', (e) => {
         div.style.padding = "10px";
         div.style.borderBottom = "1px solid #eee";
         div.style.cursor = "pointer";
-        
-        // HTML con colores
         div.innerHTML = `
             <span style="color: #007bff; font-weight: bold;">${p.codigo}</span> - 
             <span style="color: #333;">${p.descripcion}</span> 
-            <span style="color: #28a745; font-size: 0.9em; margin-left: 10px;">[UxB: ${p.unidades_x_bulto}]</span>
+            <span style="color: #28a745; font-size: 0.9em; margin-left: 10px; font-weight: bold;">[UxB: ${p.unidades_x_bulto}]</span>
         `;
 
         div.onclick = () => {
             selectedProductName.textContent = p.descripcion;
-            // Guardamos datos adicionales en el elemento para usarlos al grabar
             selectedProductName.dataset.codigo = p.codigo;
             selectedProductName.dataset.uxb = p.unidades_x_bulto;
-            
             detailCard.classList.remove('hidden');
             productList.innerHTML = "";
             searchInput.value = "";
@@ -137,23 +132,25 @@ searchInput.addEventListener('input', (e) => {
     });
 });
 
-// 3. GRABAR CONTEO COMPLETO
+// 2. GRABAR CONTEO CON CÁLCULO TOTAL
 document.getElementById('addEntryButton').addEventListener('click', () => {
-    const bultos = document.getElementById('cantidadBultos').value;
-    const unidades = document.getElementById('unidadesSueltas').value;
+    const bultos = parseInt(document.getElementById('cantidadBultos').value) || 0;
+    const unidades = parseInt(document.getElementById('unidadesSueltas').value) || 0;
+    const uxb = parseInt(selectedProductName.dataset.uxb) || 0;
     const fecha = document.getElementById('fechaVencimiento').value;
 
-    if (!fecha) {
-        alert("Por favor, ingresa una fecha de vencimiento");
-        return;
-    }
+    if (!fecha) return alert("Ingrese fecha de vencimiento");
+
+    // FÓRMULA DE CÁLCULO TOTAL
+    const totalCalc = (bultos * uxb) + unidades;
 
     const nuevoItem = {
         codigo: selectedProductName.dataset.codigo,
         nombre: selectedProductName.textContent,
-        uxb: selectedProductName.dataset.uxb,
+        uxb: uxb,
         bultos: bultos,
         unidades: unidades,
+        total: totalCalc,
         fecha: fecha,
         hora: new Date().toLocaleTimeString()
     };
@@ -166,32 +163,28 @@ document.getElementById('addEntryButton').addEventListener('click', () => {
     document.getElementById('productForm').reset();
 });
 
-// 4. MOSTRAR REGISTRO COMPLETO EN TABLA
+// 3. ACTUALIZAR TABLA CON COLUMNA TOTAL
 function actualizarVista() {
     if (conteosEfectuados.length === 0) {
-        sessionEntries.innerHTML = "No hay datos guardados aún.";
+        sessionEntries.innerHTML = "No hay datos.";
         exportButton.disabled = true;
         return;
     }
 
     exportButton.disabled = false;
-    let tabla = `<table border="1" style="width:100%; border-collapse: collapse; font-size: 0.85em; text-align: left;">
+    let tabla = `<table border="1" style="width:100%; border-collapse: collapse; font-size: 0.85em;">
         <tr style="background-color: #f2f2f2;">
-            <th style="padding: 5px;">Cód.</th>
-            <th style="padding: 5px;">Producto</th>
-            <th style="padding: 5px;">UxB</th>
-            <th style="padding: 5px;">B</th>
-            <th style="padding: 5px;">U</th>
-            <th style="padding: 5px;">Vence</th>
+            <th>Cód.</th><th>Producto</th><th>UxB</th><th>B</th><th>U</th><th style="background:#d4edda">Total</th><th>Vence</th>
         </tr>`;
     
     conteosEfectuados.forEach(item => {
         tabla += `<tr>
             <td style="padding: 5px; color: #007bff;">${item.codigo}</td>
             <td style="padding: 5px;">${item.nombre}</td>
-            <td style="padding: 5px; text-align: center;">${item.uxb}</td>
-            <td style="padding: 5px; text-align: center;">${item.bultos}</td>
-            <td style="padding: 5px; text-align: center;">${item.unidades}</td>
+            <td style="text-align: center;">${item.uxb}</td>
+            <td style="text-align: center;">${item.bultos}</td>
+            <td style="text-align: center;">${item.unidades}</td>
+            <td style="text-align: center; font-weight: bold; color: #155724;">${item.total}</td>
             <td style="padding: 5px;">${item.fecha}</td>
         </tr>`;
     });
@@ -199,24 +192,24 @@ function actualizarVista() {
     sessionEntries.innerHTML = tabla;
 }
 
-// 5. EXPORTAR A CSV (Incluye Código y UxB)
+// 4. EXPORTAR CSV CON TOTALES
 exportButton.addEventListener('click', () => {
     let csvContent = "\uFEFF"; 
-    csvContent += "Codigo;Producto;UxB;Bultos;Unidades;Vencimiento;Hora\n";
+    csvContent += "Codigo;Producto;UxB;Bultos;Unidades;Total_Unidades;Vencimiento;Hora\n";
 
     conteosEfectuados.forEach(item => {
-        csvContent += `${item.codigo};${item.nombre};${item.uxb};${item.bultos};${item.unidades};${item.fecha};${item.hora}\n`;
+        csvContent += `${item.codigo};${item.nombre};${item.uxb};${item.bultos};${item.unidades};${item.total};${item.fecha};${item.hora}\n`;
     });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `conteo_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
+    link.href = url;
+    link.download = `conteo_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
     link.click();
 });
 
-// 6. LIMPIAR TODO
+// 5. NUEVO CONTEO
 document.getElementById('newCountButton').addEventListener('click', () => {
     if (confirm("¿Borrar todo el conteo actual?")) {
         localStorage.removeItem('misConteos');
@@ -225,5 +218,4 @@ document.getElementById('newCountButton').addEventListener('click', () => {
     }
 });
 
-// Iniciar al cargar
 actualizarVista();
