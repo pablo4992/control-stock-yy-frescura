@@ -1,3 +1,4 @@
+// MAESTRO DE ARTÍCULOS CON UXB VISIBLE
 const productos = [
     { "codigo": "300052023", "descripcion": "3D MEGA QUESO 23GX120", "unidades_x_bulto": 120 },
     { "codigo": "300058395", "descripcion": "3D QUESO 43GX75X1", "unidades_x_bulto": 75 },
@@ -98,7 +99,7 @@ const productos = [
     { "codigo": "300065611", "descripcion": "QUAKER AVENA TRADIC 280GX20 ARG", "unidades_x_bulto": 20 },
     { "codigo": "300065612", "descripcion": "QUAKER AVENA INST 500GX10 ARG", "unidades_x_bulto": 10 },
     { "codigo": "300051958", "descripcion": "QUAKER AVENA EXTRA FINA 500X18 ARG", "unidades_x_bulto": 18 }
-];
+].sort((a, b) => a.descripcion.localeCompare(b.descripcion));
 
 let registrosSesion = [];
 let productoSeleccionado = null;
@@ -110,9 +111,11 @@ const selectedProductName = document.getElementById('selectedProductName');
 const sessionEntries = document.getElementById('sessionEntries');
 const exportButton = document.getElementById('exportButton');
 
+// BUSCADOR: MUESTRA CÓDIGO Y UxB
 searchInput.addEventListener('input', () => {
     const term = searchInput.value.toLowerCase().trim();
     productList.innerHTML = '';
+    
     if (term.length < 2) return;
 
     const filtrados = productos.filter(p => 
@@ -125,10 +128,10 @@ searchInput.addEventListener('input', () => {
         filtrados.forEach(p => {
             const div = document.createElement('div');
             div.style = "padding: 12px; border-bottom: 1px solid #ddd; cursor: pointer; background: #fff;";
-            div.innerHTML = `<span style="color:#007bff; font-weight:bold;">[${p.codigo}]</span> <b>${p.descripcion}</b><br><small>Bulto: ${p.unidades_x_bulto} un.</small>`;
+            div.innerHTML = `<span style="color:#007bff; font-weight:bold;">[${p.codigo}]</span> <b>${p.descripcion}</b><br><small style="color:#d9534f; font-weight:bold;">UxB: ${p.unidades_x_bulto} unidades</small>`;
             div.onclick = () => {
                 productoSeleccionado = p;
-                selectedProductName.innerText = `[${p.codigo}] ${p.descripcion}`;
+                selectedProductName.innerText = `[${p.codigo}] ${p.descripcion} - (UxB: ${p.unidades_x_bulto})`;
                 detailCard.classList.remove('hidden');
                 productList.innerHTML = '';
                 searchInput.value = p.descripcion;
@@ -138,6 +141,7 @@ searchInput.addEventListener('input', () => {
     }
 });
 
+// REGISTRAR PRODUCTO
 document.getElementById('addEntryButton').onclick = () => {
     const bultos = parseInt(document.getElementById('cantidadBultos').value) || 0;
     const unidades = parseInt(document.getElementById('unidadesSueltas').value) || 0;
@@ -150,6 +154,7 @@ document.getElementById('addEntryButton').onclick = () => {
     registrosSesion.push({
         codigo: productoSeleccionado.codigo,
         descripcion: productoSeleccionado.descripcion,
+        uxb: productoSeleccionado.unidades_x_bulto,
         bultos, unidades, total,
         vencimiento: fecha
     });
@@ -161,6 +166,7 @@ document.getElementById('addEntryButton').onclick = () => {
     searchInput.focus();
 };
 
+// VISTA CON DETALLE DE UxB
 function actualizarVista() {
     if (registrosSesion.length === 0) {
         sessionEntries.innerHTML = 'Vacío';
@@ -170,6 +176,7 @@ function actualizarVista() {
             <div style="background:#f8f9fa; border-left: 5px solid #007bff; padding:10px; margin-bottom:5px; border-radius:5px; position:relative;">
                 <span style="font-size:0.85em; color:#555;">ID: ${r.codigo}</span><br>
                 <b>${r.descripcion}</b><br>
+                <span style="font-size:0.9em; color:#d9534f;">UxB: ${r.uxb} | Bultos: ${r.bultos} | Sueltas: ${r.unidades}</span><br>
                 Total: <span style="color:#28a745; font-weight:bold;">${r.total} un.</span><br>
                 Vence: <b>${r.vencimiento}</b>
                 <button onclick="borrarLinea(${i})" style="position:absolute; right:10px; top:10px; color:red; border:none; background:none; font-size:1.2em; font-weight:bold; cursor:pointer;">&times;</button>
@@ -184,10 +191,11 @@ window.borrarLinea = (i) => {
     actualizarVista();
 };
 
+// EXPORTACIÓN
 exportButton.onclick = () => {
-    let csv = "Codigo;Producto;Bultos;Unidades;Total;Vencimiento\n";
+    let csv = "Codigo;Producto;UxB;Bultos;UnidadesSueltas;TotalUnidades;Vencimiento\n";
     registrosSesion.forEach(r => {
-        csv += `${r.codigo};${r.descripcion};${r.bultos};${r.unidades};${r.total};${r.vencimiento}\n`;
+        csv += `${r.codigo};${r.descripcion};${r.uxb};${r.bultos};${r.unidades};${r.total};${r.vencimiento}\n`;
     });
     const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
