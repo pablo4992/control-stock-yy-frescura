@@ -15,10 +15,7 @@
   <main>
     <h1>Conteo de Productos</h1>
 
- <div id="cronometro" style="display:none; text-align:center; font-size:1.3em; font-weight:bold; color:#d9534f; margin-bottom:15px; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;">
-  Tiempo de conteo: 00:00
-</div>
-
+    <div id="cronometro" style="display:none;"></div>
 
     <section class="search-section">
       <label for="searchInput">Buscar producto (Nombre o Código):</label>
@@ -36,13 +33,14 @@
         <p><strong>Producto seleccionado:</strong> <span id="selectedProductName"></span></p>
         <form id="productForm">
           <label for="cantidadBultos">Cantidad de bultos</label>
-          <input id="cantidadBultos" name="cantidadBultos" type="number" min="0" value="0" required />
+          <!-- inputmode="numeric" fuerza el teclado numérico en móvil -->
+          <input id="cantidadBultos" type="number" inputmode="numeric" min="0" value="0" required />
 
           <label for="unidadesSueltas">Unidades sueltas</label>
-          <input id="unidadesSueltas" name="unidadesSueltas" type="number" min="0" value="0" required />
+          <input id="unidadesSueltas" type="number" inputmode="numeric" min="0" value="0" required />
 
           <label for="fechaVencimiento">Fecha de vencimiento</label>
-          <input id="fechaVencimiento" name="fechaVencimiento" type="date" required />
+          <input id="fechaVencimiento" type="date" required />
 
           <button id="addEntryButton" type="button">Agregar producto</button>
         </form>
@@ -51,12 +49,13 @@
 
     <section class="session-section">
       <h2>Registro de sesión</h2>
-      <div id="sessionEntries" class="session-entries">No hay datos guardados aún.</div>
+      <div id="sessionEntries" class="session-entries">No hay datos.</div>
       <button id="newCountButton" type="button" class="warning-button">Nuevo Conteo</button>
       <button id="exportButton" type="button" disabled>Guardar y exportar CSV</button>
+      <button id="whatsappButton" type="button" style="background-color: #25D366; color: white; margin-top: 10px;">Enviar por WhatsApp</button>
     </section>
   </main>
 
-  <script src="script.js?v=1.05"></script>
+  <script src="script.js?v=1.06"></script>
 </body>
 </html>
