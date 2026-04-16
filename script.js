@@ -82,13 +82,12 @@ const productos = [
     { "codigo": "300063263", "descripcion": "TWISTOS MINIT QUESO 40GX112X1", "unidades_x_bulto": 112 },
     { "codigo": "300063097", "descripcion": "TWISTOS MINIT QUESO 95GX30X1", "unidades_x_bulto": 30 },
     { "codigo": "300052694", "descripcion": "TWISTOS MINIT QUESO 155GX20", "unidades_x_bulto": 20 },
-    { "codigo": "300063264", "descripcion": "TWISTOS MINIT", "unidades_x_bulto": 1 } // Ajustado a 1 para evitar divisiones por cero
+    { "codigo": "300063264", "descripcion": "TWISTOS MINIT", "unidades_x_bulto": 1 }
 ];
-
-// --- LÓGICA DEL SISTEMA ---
 
 let conteosEfectuados = JSON.parse(localStorage.getItem('misConteos')) || [];
 
+// Elementos DOM
 const searchInput = document.getElementById('searchInput');
 const productList = document.getElementById('productList');
 const detailCard = document.getElementById('detailCard');
@@ -96,7 +95,12 @@ const selectedProductName = document.getElementById('selectedProductName');
 const sessionEntries = document.getElementById('sessionEntries');
 const exportButton = document.getElementById('exportButton');
 
-// 1. BUSCADOR CON COLORES Y UXB
+// Inputs Formulario
+const inputBultos = document.getElementById('cantidadBultos');
+const inputUnidades = document.getElementById('unidadesSueltas');
+const inputFecha = document.getElementById('fechaVencimiento');
+
+// 1. BUSCADOR TÁCTIL
 searchInput.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase();
     if (term.length < 2) {
@@ -111,13 +115,12 @@ searchInput.addEventListener('input', (e) => {
     productList.innerHTML = "";
     filtrados.forEach(p => {
         const div = document.createElement('div');
-        div.style.padding = "10px";
+        div.style.padding = "15px"; // Más grande para el dedo
         div.style.borderBottom = "1px solid #eee";
-        div.style.cursor = "pointer";
         div.innerHTML = `
-            <span style="color: #007bff; font-weight: bold;">${p.codigo}</span> - 
+            <span style="color: #007bff; font-weight: bold;">${p.codigo}</span><br>
             <span style="color: #333;">${p.descripcion}</span> 
-            <span style="color: #28a745; font-size: 0.9em; margin-left: 10px; font-weight: bold;">[UxB: ${p.unidades_x_bulto}]</span>
+            <span style="color: #28a745; font-weight: bold; margin-left: 5px;">[UxB: ${p.unidades_x_bulto}]</span>
         `;
 
         div.onclick = () => {
@@ -127,22 +130,40 @@ searchInput.addEventListener('input', (e) => {
             detailCard.classList.remove('hidden');
             productList.innerHTML = "";
             searchInput.value = "";
+            
+            // Salto automático y selección del texto
+            setTimeout(() => {
+                inputBultos.focus();
+                inputBultos.select(); 
+            }, 100);
         };
         productList.appendChild(div);
     });
 });
 
-// 2. GRABAR CONTEO CON CÁLCULO TOTAL
-document.getElementById('addEntryButton').addEventListener('click', () => {
-    const bultos = parseInt(document.getElementById('cantidadBultos').value) || 0;
-    const unidades = parseInt(document.getElementById('unidadesSueltas').value) || 0;
+// 2. ATAJOS DE TECLADO MÓVIL (Enter / Next)
+[inputBultos, inputUnidades, inputFecha].forEach((el, index, array) => {
+    el.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (index < array.length - 1) {
+                array[index + 1].focus();
+                if(array[index+1].select) array[index+1].select();
+            } else {
+                guardarConteo();
+            }
+        }
+    });
+});
+
+// 3. GUARDAR
+function guardarConteo() {
+    const bultos = parseInt(inputBultos.value) || 0;
+    const unidades = parseInt(inputUnidades.value) || 0;
     const uxb = parseInt(selectedProductName.dataset.uxb) || 0;
-    const fecha = document.getElementById('fechaVencimiento').value;
+    const fecha = inputFecha.value;
 
-    if (!fecha) return alert("Ingrese fecha de vencimiento");
-
-    // FÓRMULA DE CÁLCULO TOTAL
-    const totalCalc = (bultos * uxb) + unidades;
+    if (!fecha) return alert("Falta la fecha");
 
     const nuevoItem = {
         codigo: selectedProductName.dataset.codigo,
@@ -150,7 +171,7 @@ document.getElementById('addEntryButton').addEventListener('click', () => {
         uxb: uxb,
         bultos: bultos,
         unidades: unidades,
-        total: totalCalc,
+        total: (bultos * uxb) + unidades,
         fecha: fecha,
         hora: new Date().toLocaleTimeString()
     };
@@ -159,63 +180,62 @@ document.getElementById('addEntryButton').addEventListener('click', () => {
     localStorage.setItem('misConteos', JSON.stringify(conteosEfectuados));
     
     actualizarVista();
+    
+    // Reset y vuelta al buscador
     detailCard.classList.add('hidden');
     document.getElementById('productForm').reset();
-});
+    window.scrollTo(0, 0); // Sube la pantalla para ver el buscador
+    searchInput.focus();
+}
 
-// 3. ACTUALIZAR TABLA CON COLUMNA TOTAL
+document.getElementById('addEntryButton').onclick = guardarConteo;
+
+// 4. VISTA
 function actualizarVista() {
     if (conteosEfectuados.length === 0) {
-        sessionEntries.innerHTML = "No hay datos.";
+        sessionEntries.innerHTML = "Sin datos.";
         exportButton.disabled = true;
         return;
     }
-
     exportButton.disabled = false;
-    let tabla = `<table border="1" style="width:100%; border-collapse: collapse; font-size: 0.85em;">
-        <tr style="background-color: #f2f2f2;">
-            <th>Cód.</th><th>Producto</th><th>UxB</th><th>B</th><th>U</th><th style="background:#d4edda">Total</th><th>Vence</th>
-        </tr>`;
-    
+    let tabla = `<div style="overflow-x:auto;"><table border="1" style="width:100%; border-collapse: collapse; font-size: 0.8em;">
+        <tr style="background: #eee;"><th>Cód.</th><th>Prod.</th><th>UxB</th><th>B</th><th>U</th><th>Total</th></tr>`;
     conteosEfectuados.forEach(item => {
         tabla += `<tr>
-            <td style="padding: 5px; color: #007bff;">${item.codigo}</td>
-            <td style="padding: 5px;">${item.nombre}</td>
-            <td style="text-align: center;">${item.uxb}</td>
-            <td style="text-align: center;">${item.bultos}</td>
-            <td style="text-align: center;">${item.unidades}</td>
-            <td style="text-align: center; font-weight: bold; color: #155724;">${item.total}</td>
-            <td style="padding: 5px;">${item.fecha}</td>
-        </tr>`;
+            <td>${item.codigo}</td><td>${item.nombre}</td><td>${item.uxb}</td>
+            <td>${item.bultos}</td><td>${item.unidades}</td>
+            <td style="font-weight:bold; color:green;">${item.total}</td></tr>`;
     });
-    tabla += `</table>`;
+    tabla += `</table></div>`;
     sessionEntries.innerHTML = tabla;
 }
 
-// 4. EXPORTAR CSV CON TOTALES
-exportButton.addEventListener('click', () => {
-    let csvContent = "\uFEFF"; 
-    csvContent += "Codigo;Producto;UxB;Bultos;Unidades;Total_Unidades;Vencimiento;Hora\n";
-
-    conteosEfectuados.forEach(item => {
-        csvContent += `${item.codigo};${item.nombre};${item.uxb};${item.bultos};${item.unidades};${item.total};${item.fecha};${item.hora}\n`;
-    });
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
+// 5. EXPORTACIONES
+exportButton.onclick = () => {
+    let csv = "\uFEFFCodigo;Producto;UxB;Bultos;Unidades;Total;Vencimiento\n";
+    conteosEfectuados.forEach(i => csv += `${i.codigo};${i.nombre};${i.uxb};${i.bultos};${i.unidades};${i.total};${i.fecha}\n`);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
-    link.href = url;
-    link.download = `conteo_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
+    link.href = URL.createObjectURL(blob);
+    link.download = `conteo_${new Date().toLocaleDateString()}.csv`;
     link.click();
+};
+
+// Listener para el botón de WhatsApp (buscando el ID dinámicamente)
+document.addEventListener('click', (e) => {
+    if(e.target.id === 'whatsappButton') {
+        let msg = "*CONTEO*\n";
+        conteosEfectuados.forEach(i => msg += `*${i.nombre}*: ${i.total} un.\n`);
+        window.open(`https://wa.me{encodeURIComponent(msg)}`, '_blank');
+    }
 });
 
-// 5. NUEVO CONTEO
-document.getElementById('newCountButton').addEventListener('click', () => {
-    if (confirm("¿Borrar todo el conteo actual?")) {
+document.getElementById('newCountButton').onclick = () => {
+    if(confirm("¿Limpiar todo?")) {
         localStorage.removeItem('misConteos');
         conteosEfectuados = [];
         actualizarVista();
     }
-});
+};
 
 actualizarVista();
