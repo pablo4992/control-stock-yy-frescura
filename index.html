@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- ETIQUETAS PARA EVITAR EL CACHÉ -->
   <meta http-equiv="Expires" content="0">
   <meta http-equiv="Last-Modified" content="0">
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
@@ -17,23 +19,28 @@
 
     <div id="cronometro" style="display:none;"></div>
 
-    <!-- SECCIÓN PROVEEDOR -->
+    <!-- SECCIÓN PROVEEDOR ACTUALIZADA -->
     <section class="supplier-section" style="margin-bottom: 15px;">
-      <label for="supplierSelect">Proveedor actual:</label>
-      <select id="supplierSelect" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #007bff; font-weight: bold;">
+      <label for="supplierSelect" style="display: block; margin-bottom: 5px; font-weight: bold;">Proveedor actual:</label>
+      <select id="supplierSelect" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #007bff; font-weight: bold; font-size: 1.1em;">
         <option value="PEPSICO">PEPSICO</option>
-        <option value="ARCOR">ARCOR</option>
-        <option value="MONDELEZ">MONDELEZ</option>
-        <option value="OTROS">OTROS</option>
+        <option value="BIGAR SA">BIGAR SA</option>
+        <option value="DIELO SA">DIELO SA</option>
+        <option value="DON SATUR">DON SATUR</option>
+        <option value="GENOMMA">GENOMMA</option>
+        <option value="GEORGUALOS HNOS">GEORGUALOS HNOS</option>
+        <option value="GRUPO PEÑAFLOR SA">GRUPO PEÑAFLOR SA</option>
+        <option value="TIMBO SA">TIMBO SA</option>
       </select>
     </section>
 
     <section class="search-section">
-      <label for="searchInput">Buscar producto:</label>
+      <label for="searchInput">Buscar producto (Nombre o Código):</label>
       <input id="searchInput" type="search" placeholder="Ingrese nombre o código..." autocomplete="off" />
     </section>
 
     <section class="product-list-section">
+      <!-- Se mantiene el ID para que el script inyecte los resultados aquí -->
       <div id="productList" class="product-list">Escriba para buscar...</div>
     </section>
 
@@ -42,6 +49,7 @@
         <p><strong>Seleccionado:</strong> <span id="selectedProductName"></span></p>
         <form id="productForm">
           <label for="cantidadBultos">Cantidad de bultos</label>
+          <!-- inputmode numeric para teclado de números en celular -->
           <input id="cantidadBultos" type="number" inputmode="numeric" min="0" value="0" required />
 
           <label for="unidadesSueltas">Unidades sueltas</label>
@@ -63,6 +71,7 @@
     </section>
   </main>
 
+  <!-- ACTUALIZADO A V=1.08 -->
   <script src="script.js?v=1.08"></script>
 </body>
 </html>
