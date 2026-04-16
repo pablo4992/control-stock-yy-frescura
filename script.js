@@ -150,7 +150,7 @@ searchInput.addEventListener('input', (e) => {
     });
 });
 
-// 2. MODO RÁPIDO (SALTOS)
+// 2. MODO RÁPIDO (SALTOS CON ENTER)
 [inputBultos, inputUnidades, inputFecha].forEach((el, idx, arr) => {
     el.addEventListener('keypress', (e) => {
         if(e.key === 'Enter'){
@@ -180,15 +180,11 @@ function guardarConteo() {
         unidades: unidades,
         total: (bultos * uxb) + unidades,
         fecha: inputFecha.value,
-        proveedor: supplierSelect.value, // Guardamos el proveedor seteado
+        proveedor: supplierSelect.value,
         hora: new Date().toLocaleTimeString()
     });
     localStorage.setItem('misConteos', JSON.stringify(conteosEfectuados));
     
-    // BLOQUEAR SELECTOR DESPUÉS DEL PRIMER REGISTRO
-    supplierSelect.disabled = true;
-    supplierSelect.style.backgroundColor = "#e9ecef";
-
     actualizarVista();
     detailCard.classList.add('hidden');
     document.getElementById('productForm').reset();
@@ -198,17 +194,18 @@ function guardarConteo() {
 
 document.getElementById('addEntryButton').onclick = guardarConteo;
 
-// 4. VISTA
+// 4. ACTUALIZAR VISTA
 function actualizarVista() {
     if (conteosEfectuados.length === 0) {
         sessionEntries.innerHTML = "Sin datos.";
         exportButton.disabled = true;
-        supplierSelect.disabled = false; // Desbloquear si no hay datos
+        supplierSelect.disabled = false;
         supplierSelect.style.backgroundColor = "#fff";
         return;
     }
     exportButton.disabled = false;
-    supplierSelect.disabled = true; // Bloquear si hay datos cargados
+    supplierSelect.disabled = true; 
+    supplierSelect.style.backgroundColor = "#e9ecef";
 
     let tabla = `<div style="overflow-x:auto;"><table border="1" style="width:100%; border-collapse: collapse; font-size: 0.8em;">
         <tr style="background:#eee;"><th>Cód.</th><th>Prod.</th><th>B</th><th>U</th><th>Total</th></tr>`;
@@ -219,5 +216,26 @@ function actualizarVista() {
     sessionEntries.innerHTML = tabla;
 }
 
-// 5. EXPORTAR CSV
-exportButton.onclick
+// 5. EXPORTAR CSV (VERIFICADO)
+exportButton.onclick = () => {
+    let csv = "Codigo;Proveedor;Producto;UxB;Bultos;Unidades;Total;Vencimiento;Hora\r\n";
+    conteosEfectuados.forEach(i => {
+        csv += `${i.codigo};${i.proveedor};${i.nombre};${i.uxb};${i.bultos};${i.unidades};${i.total};${i.fecha};${i.hora}\r\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-16;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `conteo_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
+    link.click();
+};
+
+// 6. NUEVO CONTEO
+document.getElementById('newCountButton').onclick = () => {
+    if(confirm("¿Limpiar todo?")) {
+        localStorage.removeItem('misConteos');
+        conteosEfectuados = [];
+        actualizarVista();
+    }
+};
+
+actualizarVista();
