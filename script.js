@@ -1,4 +1,4 @@
-// MAESTRO DE ARTÍCULOS ACTIVOS (Exactamente como los pasaste)
+// MAESTRO DE ARTÍCULOS ACTIVOS (Lista Completa)
 const productos = [
     { "codigo": "300052023", "descripcion": "3D MEGA QUESO 23GX120", "unidades_x_bulto": 120 },
     { "codigo": "300058395", "descripcion": "3D QUESO 43GX75X1", "unidades_x_bulto": 75 },
@@ -82,12 +82,12 @@ const productos = [
     { "codigo": "300063263", "descripcion": "TWISTOS MINIT QUESO 40GX112X1", "unidades_x_bulto": 112 },
     { "codigo": "300063097", "descripcion": "TWISTOS MINIT QUESO 95GX30X1", "unidades_x_bulto": 30 },
     { "codigo": "300052694", "descripcion": "TWISTOS MINIT QUESO 155GX20", "unidades_x_bulto": 20 },
-    { "codigo": "300063264", "descripcion": "TWISTOS MINIT" } // Se agregó el último de tu lista
+    { "codigo": "300063264", "descripcion": "TWISTOS MINIT", "unidades_x_bulto": 0 }
 ];
 
-// --- LÓGICA DE LA APLICACIÓN ---
+// --- LÓGICA DE PERSISTENCIA Y FUNCIONAMIENTO ---
 
-// 1. CARGA INICIAL DESDE MEMORIA
+// 1. CARGA DE DATOS GUARDADOS
 let conteosEfectuados = JSON.parse(localStorage.getItem('misConteos')) || [];
 
 const searchInput = document.getElementById('searchInput');
@@ -97,7 +97,7 @@ const selectedProductName = document.getElementById('selectedProductName');
 const sessionEntries = document.getElementById('sessionEntries');
 const exportButton = document.getElementById('exportButton');
 
-// 2. BÚSQUEDA DE PRODUCTOS
+// 2. BÚSQUEDA CON COLORES Y UXB
 searchInput.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase();
     if (term.length < 2) {
@@ -115,9 +115,20 @@ searchInput.addEventListener('input', (e) => {
         div.style.padding = "10px";
         div.style.borderBottom = "1px solid #eee";
         div.style.cursor = "pointer";
-        div.textContent = `${p.codigo} - ${p.descripcion}`;
+        
+        // HTML con colores
+        div.innerHTML = `
+            <span style="color: #007bff; font-weight: bold;">${p.codigo}</span> - 
+            <span style="color: #333;">${p.descripcion}</span> 
+            <span style="color: #28a745; font-size: 0.9em; margin-left: 10px;">[UxB: ${p.unidades_x_bulto}]</span>
+        `;
+
         div.onclick = () => {
             selectedProductName.textContent = p.descripcion;
+            // Guardamos datos adicionales en el elemento para usarlos al grabar
+            selectedProductName.dataset.codigo = p.codigo;
+            selectedProductName.dataset.uxb = p.unidades_x_bulto;
+            
             detailCard.classList.remove('hidden');
             productList.innerHTML = "";
             searchInput.value = "";
@@ -126,7 +137,7 @@ searchInput.addEventListener('input', (e) => {
     });
 });
 
-// 3. AGREGAR Y GUARDAR (Persistencia)
+// 3. GRABAR CONTEO COMPLETO
 document.getElementById('addEntryButton').addEventListener('click', () => {
     const bultos = document.getElementById('cantidadBultos').value;
     const unidades = document.getElementById('unidadesSueltas').value;
@@ -138,16 +149,16 @@ document.getElementById('addEntryButton').addEventListener('click', () => {
     }
 
     const nuevoItem = {
+        codigo: selectedProductName.dataset.codigo,
         nombre: selectedProductName.textContent,
-        bultos,
-        unidades,
-        fecha,
+        uxb: selectedProductName.dataset.uxb,
+        bultos: bultos,
+        unidades: unidades,
+        fecha: fecha,
         hora: new Date().toLocaleTimeString()
     };
 
     conteosEfectuados.push(nuevoItem);
-    
-    // GUARDAR EN LOCALSTORAGE
     localStorage.setItem('misConteos', JSON.stringify(conteosEfectuados));
     
     actualizarVista();
@@ -155,7 +166,7 @@ document.getElementById('addEntryButton').addEventListener('click', () => {
     document.getElementById('productForm').reset();
 });
 
-// 4. ACTUALIZAR TABLA EN PANTALLA
+// 4. MOSTRAR REGISTRO COMPLETO EN TABLA
 function actualizarVista() {
     if (conteosEfectuados.length === 0) {
         sessionEntries.innerHTML = "No hay datos guardados aún.";
@@ -164,51 +175,55 @@ function actualizarVista() {
     }
 
     exportButton.disabled = false;
-    let tabla = `<table border="1" style="width:100%; border-collapse: collapse; text-align: left;">
+    let tabla = `<table border="1" style="width:100%; border-collapse: collapse; font-size: 0.85em; text-align: left;">
         <tr style="background-color: #f2f2f2;">
-            <th style="padding: 8px;">Producto</th>
-            <th style="padding: 8px;">Bultos</th>
-            <th style="padding: 8px;">Sueltas</th>
-            <th style="padding: 8px;">Vence</th>
+            <th style="padding: 5px;">Cód.</th>
+            <th style="padding: 5px;">Producto</th>
+            <th style="padding: 5px;">UxB</th>
+            <th style="padding: 5px;">B</th>
+            <th style="padding: 5px;">U</th>
+            <th style="padding: 5px;">Vence</th>
         </tr>`;
     
     conteosEfectuados.forEach(item => {
         tabla += `<tr>
-            <td style="padding: 8px;">${item.nombre}</td>
-            <td style="padding: 8px;">${item.bultos}</td>
-            <td style="padding: 8px;">${item.unidades}</td>
-            <td style="padding: 8px;">${item.fecha}</td>
+            <td style="padding: 5px; color: #007bff;">${item.codigo}</td>
+            <td style="padding: 5px;">${item.nombre}</td>
+            <td style="padding: 5px; text-align: center;">${item.uxb}</td>
+            <td style="padding: 5px; text-align: center;">${item.bultos}</td>
+            <td style="padding: 5px; text-align: center;">${item.unidades}</td>
+            <td style="padding: 5px;">${item.fecha}</td>
         </tr>`;
     });
     tabla += `</table>`;
     sessionEntries.innerHTML = tabla;
 }
 
-// 5. EXPORTAR CSV
+// 5. EXPORTAR A CSV (Incluye Código y UxB)
 exportButton.addEventListener('click', () => {
     let csvContent = "\uFEFF"; 
-    csvContent += "Producto;Bultos;Unidades;Vencimiento;Hora Registro\n";
+    csvContent += "Codigo;Producto;UxB;Bultos;Unidades;Vencimiento;Hora\n";
 
     conteosEfectuados.forEach(item => {
-        csvContent += `${item.nombre};${item.bultos};${item.unidades};${item.fecha};${item.hora}\n`;
+        csvContent += `${item.codigo};${item.nombre};${item.uxb};${item.bultos};${item.unidades};${item.fecha};${item.hora}\n`;
     });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `conteo_${new Date().toLocaleDateString()}.csv`);
+    link.setAttribute("download", `conteo_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
     link.click();
 });
 
-// 6. BOTÓN NUEVO CONTEO (Borrar memoria)
+// 6. LIMPIAR TODO
 document.getElementById('newCountButton').addEventListener('click', () => {
-    if (confirm("¿Estás seguro de que quieres borrar todo el conteo actual?")) {
+    if (confirm("¿Borrar todo el conteo actual?")) {
         localStorage.removeItem('misConteos');
         conteosEfectuados = [];
         actualizarVista();
     }
 });
 
-// Inicializar la vista al cargar
+// Iniciar al cargar
 actualizarVista();
